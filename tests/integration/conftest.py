@@ -7,7 +7,7 @@ from app.core.config import config
 from app.core.database import Base, get_db
 from app.main import app
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def engine_fixture():
     engine = create_async_engine(url=config.TEST_DATABASE_URL)
     async with engine.begin() as conn:
@@ -20,9 +20,11 @@ async def engine_fixture():
 async def session_fixture(engine_fixture):
     Session = async_sessionmaker(engine_fixture)
     async with Session() as session:
-        yield session
-        await session.execute(text("TRUNCATE TABLE users, habits RESTART IDENTITY CASCADE"))
-        await session.commit()
+        try:
+            yield session
+        finally:
+            await session.execute(text("TRUNCATE TABLE users, habits RESTART IDENTITY CASCADE"))
+            await session.commit()
 
 @pytest_asyncio.fixture(scope="function")
 async def client_fixture(session_fixture):

@@ -12,7 +12,7 @@ class HabitService:
         exists = await self.repo.get_by_user_id_and_name(user_id, habit.name)
         if exists:
             raise SomethingAlreadyExistsException('This habit is already in use')
-        new_habit = await self.repo.create(habit.name, habit.days)
+        new_habit = await self.repo.create(habit.name, habit.days, user_id)
         return new_habit
 
     async def delete_habit(self, id: int):

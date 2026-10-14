@@ -1,6 +1,7 @@
 from typing import Any
 from jose import jwt
 import bcrypt
+from datetime import datetime, timedelta, timezone
 
 from app.core.config import config
 
@@ -14,8 +15,8 @@ def verify_password(password: str, hashed_password: str):
 
 def create_access_token(user_id: int):
     payload = {
-        "sub": user_id,
-        "exp": int(config.EXPIRE_MINUTES)
+        "sub": str(user_id),
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=int(config.EXPIRE_MINUTES))
     }
     return jwt.encode(payload, config.SECRET_KEY, algorithm=config.ALGORITHM)
 

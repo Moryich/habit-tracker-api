@@ -14,8 +14,9 @@ class HabitRepository:
     async def get_by_id(self, id: int) -> Habit | None:
         return (await self.db.execute(select(Habit).where(Habit.id == id))).scalar_one_or_none()
 
-    async def create(self, name: str, days: list[int]) -> Habit:
+    async def create(self, name: str, days: list[int], user_id: int) -> Habit:
         new_habit = Habit(
+            user_id = user_id,
             name = name,
             days = days
         )
@@ -45,7 +46,7 @@ class HabitRepository:
         return (await self.db.execute(select(Habit))).scalars().all()
 
     async def get_by_user_id(self, user_id):
-        return (await self.db.execute(select(Habit).where(Habit.user_id == user_id)))
+        return (await self.db.execute(select(Habit).where(Habit.user_id == user_id))).scalars().all()
 
     async def reset_all_checked_days(self):
         await self.db.execute(update(Habit).values(checked_days=[]))

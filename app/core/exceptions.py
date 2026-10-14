@@ -17,6 +17,14 @@ class SomethingIsInvalidException(AppException):
 class SomethingIsForbiddenException(AppException):
     status_code = 403
 
+class SomethingIsUnavailableException(AppException):
+    pass
+
 # other exception cases
 class InvalidCredentialsException(AppException):
     status_code = 401
+
+class TooManyRequestsException(AppException):
+    status_code = 429
+
+

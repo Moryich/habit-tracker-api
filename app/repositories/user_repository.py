@@ -24,5 +24,5 @@ class UserRepository:
         await self.db.refresh(new_user)
         return new_user
 
-    async def get_all(self):
-        return (await self.db.execute(select(User))).scalars().all()
+    async def get_users(self, limit: int, offset: int):
+        return (await self.db.execute(select(User).order_by(User.user_id).limit(limit).offset(offset))).scalars().all()
