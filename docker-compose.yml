@@ -27,6 +27,14 @@ services:
     ports: 
       - "6379:6379"
 
+  test_redis:
+    image: redis:8-alpine
+    command: redis-server --aclfile /usr/local/etc/redis/test_users.acl
+    volumes:
+      - ./test_users.acl:/usr/local/etc/redis/test_users.acl
+    ports:
+      - "6380:6379"
+
   backend:
     build: ./
     command: uvicorn app.main:app --host 0.0.0.0 --reload

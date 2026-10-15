@@ -8,6 +8,7 @@ class Config(BaseSettings):
     DATABASE_URL: str = os.getenv('DATABASE_URL') or ""
     TEST_DATABASE_URL: str = os.getenv('TEST_DATABASE_URL') or ""
     REDIS_URL: str = os.getenv('REDIS_URL') or ""
+    TEST_REDIS_URL: str = os.getenv('TEST_REDIS_URL') or ""
     SECRET_KEY: str = os.getenv('SECRET_KEY') or ""
     ALGORITHM: str = os.getenv('ALGORITHM') or ""
     EXPIRE_MINUTES: str = os.getenv('EXPIRE_MINUTES') or ""

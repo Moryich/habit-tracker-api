@@ -12,5 +12,7 @@ app.include_router(auth)
 app.include_router(user)
 
 @app.exception_handler(AppException)
-def exception_handler(request: Request, exc: AppException):
+def exception_handler(request: Request, exc: Exception):
+    if not isinstance(exc, AppException):
+        raise exc
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
