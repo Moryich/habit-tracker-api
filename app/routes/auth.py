@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.redis_client import rate_limiter
+from app.core.redis_client import get_redis, rate_limiter
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import AuthResponse, UserCreate, UserLogin, UserResponse
 from app.services.authService import AuthService
@@ -25,7 +26,7 @@ async def registration(user: UserCreate, service: AuthService = Depends(get_auth
 @auth.post('/login', dependencies=[
     Depends(rate_limiter(10, 60))
 ])
-async def login(user: UserLogin, service: AuthService = Depends(get_auth_service)):
-    exists, access_token = await service.login(user)
+async def login(user: UserLogin, service: AuthService = Depends(get_auth_service), client: Redis = Depends(get_redis)):
+    exists, access_token = await service.login(user, client)
     return AuthResponse(access_token=access_token, user=UserResponse.model_validate(exists))
 

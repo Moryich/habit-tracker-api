@@ -16,7 +16,7 @@ def mock_user_repo():
 def auth_service(mock_user_repo):
     return AuthService(mock_user_repo)
 
-# test_rate_limiter block
+# test_rate_limiter and brute-force protection block
 @pytest.fixture()
 def mock_redis():
     return Mock(spec=Redis)

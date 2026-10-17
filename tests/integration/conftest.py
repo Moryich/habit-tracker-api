@@ -45,12 +45,24 @@ async def client_fixture(session_fixture, redis_client_fixture):
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_redis] = override_get_redis
 
-    transport = ASGITransport(app)
-    
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        yield client
+    await redis_client_fixture.delete(
+        "127.0.0.1:/auth/login",
+        "127.0.0.1:/auth/registration",
+    )
 
-# test_rate_limiter block
+    transport = ASGITransport(app, client=("127.0.0.1", 12345))
+    try:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            yield client
+    finally:
+        await redis_client_fixture.delete(
+            "127.0.0.1:/auth/login",
+            "127.0.0.1:/auth/registration",
+        )
+        app.dependency_overrides.pop(get_db, None)
+        app.dependency_overrides.pop(get_redis, None)
+
+# redis mock client for limiting and brute-force protection
 @pytest_asyncio.fixture(scope="function")
 async def redis_client_fixture():
     redis = Redis.from_url(f"{config.TEST_REDIS_URL}/0")
@@ -59,6 +71,7 @@ async def redis_client_fixture():
     finally:
         await redis.aclose()
 
+# test_rate_limiter block
 @pytest_asyncio.fixture(scope="function")
 async def redis_key_fixture(redis_client_fixture):
     key = f"test:rate-limit:{uuid4()}"
@@ -89,3 +102,12 @@ async def redis_http_client_fixture(redis_client_fixture):
             yield client
         finally:
             await redis_client_fixture.delete("127.0.0.1:/test-rate-limiter")
+
+# brute-force protection block
+@pytest_asyncio.fixture(scope="function")
+async def brute_force_email_fixture(redis_client_fixture):
+    email = "test@test.com"
+    try:
+        yield email
+    finally:
+        await redis_client_fixture.delete(f"login-failure:{email}")

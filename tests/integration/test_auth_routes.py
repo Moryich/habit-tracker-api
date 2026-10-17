@@ -4,6 +4,7 @@ from sqlalchemy import select
 from app.models.user import User
 from app.core.security import decode_access_token, hash_password
 
+# auth routes block
 @pytest.mark.asyncio
 async def test_registration_success(client_fixture, session_fixture):
     response = await client_fixture.post("/auth/registration", json={"username": "test", "email": "test@test.com", "password": "test"})
@@ -42,3 +43,15 @@ async def test_login_success(client_fixture, session_fixture):
 
     payload = decode_access_token(data["access_token"])
     assert int(payload["sub"]) == new_user.user_id
+
+# login brute-force protection block
+@pytest.mark.asyncio
+async def test_brute_force_exception(client_fixture, brute_force_email_fixture):
+    response = await client_fixture.post("/auth/registration", json={"username": "test", "email": brute_force_email_fixture, "password": "test"})
+    assert response.status_code == 201
+    for _ in range(5):
+        response = await client_fixture.post("/auth/login", json={"email": brute_force_email_fixture, "password": "fake"})
+        assert response.status_code == 401
+
+    response = await client_fixture.post("/auth/login", json={"email": brute_force_email_fixture, "password": "fake"})
+    assert response.status_code == 429
