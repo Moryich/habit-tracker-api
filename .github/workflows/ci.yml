@@ -19,6 +19,7 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pytest ./tests/unit/ -v
       - run: pytest ./tests/integration/ -v
+      - run: docker build -t habit-tracker:ci .
     env:
       TEST_DATABASE_URL: postgresql+asyncpg://test_habit_user:1234@localhost:5432/test_habit_db
       TEST_REDIS_URL: redis://localhost:6379
