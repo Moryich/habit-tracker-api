@@ -1,12 +1,10 @@
 from redis.asyncio import Redis
 from fastapi import Depends, Request
 
-from app.core.config import config
 from app.core.exceptions import SomethingIsUnavailableException, TooManyRequestsException
 
-redis = Redis.from_url(f"{config.REDIS_URL}/1")
-
-def get_redis():
+def get_redis(request: Request):
+    redis = request.app.state.redis
     return redis
 
 # rate limiting

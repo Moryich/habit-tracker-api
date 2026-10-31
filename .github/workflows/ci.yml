@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: 
+      - main
+  pull_request: 
+    branches:
+      - main
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with: 
+          python-version: "3.14"
+      - run: pip install -r requirements.txt
+      - run: pytest ./tests/unit/ -v
+      - run: pytest ./tests/integration/ -v
+    env:
+      TEST_DATABASE_URL: postgresql+asyncpg://test_habit_user:1234@localhost:5432/test_habit_db
+      TEST_REDIS_URL: redis://localhost:6379
+      SECRET_KEY: fOavxNgbHKRZIiYUGbUZ1ckp04RkUY1PfJnRr4ivZ8
+      ALGORITHM: HS256
+      EXPIRE_MINUTES: "60"
+      BCRYPT_SALT_ROUNDS: "8"
+    services:
+      postgres: 
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: test_habit_user
+          POSTGRES_PASSWORD: "1234"
+          POSTGRES_DB: test_habit_db
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U test_habit_user -d test_habit_db"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      redis: 
+        image: redis:8-alpine
+        ports:
+          - "6379:6379"
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
