@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from sqlalchemy.orm import exc
 
-from app.core.config import config
+from tests.integration.config import get_tests_settings
 from app.core.database import Base, get_db
 from app.core.exceptions import AppException
 from app.core.redis_client import rate_limiter, get_redis
@@ -17,7 +17,7 @@ from app.main import app, exception_handler
 # test_auth_routes block
 @pytest_asyncio.fixture(scope="function")
 async def engine_fixture():
-    engine = create_async_engine(url=config.TEST_DATABASE_URL)
+    engine = create_async_engine(url=get_tests_settings().TEST_DATABASE_URL)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield engine
@@ -65,7 +65,7 @@ async def client_fixture(session_fixture, redis_client_fixture):
 # redis mock client for limiting and brute-force protection
 @pytest_asyncio.fixture(scope="function")
 async def redis_client_fixture():
-    redis = Redis.from_url(f"{config.TEST_REDIS_URL}/0")
+    redis = Redis.from_url(f"{get_tests_settings().TEST_REDIS_URL}/0")
     try:
         yield redis
     finally:
